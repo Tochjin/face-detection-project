@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  db:
+    # We use a pre-built image that already has PostgreSQL + pgvector installed
+    image: ankane/pgvector:latest
+    container_name: face_detection_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: todeiei7101
+      POSTGRES_DB: face_detection
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  pgdata:
