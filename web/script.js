@@ -179,9 +179,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     const div = document.createElement('div');
                     div.className = 'reg-card';
                     div.style.backgroundColor = '#e8f0fe';
+                    
+                    let avatarHtml = `<span class="material-symbols-outlined">person_check</span>`;
+                    if (log.image) {
+                        avatarHtml = `<img src="data:image/jpeg;base64,${log.image}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                    }
+                    
                     div.innerHTML = `
-                        <div class="reg-avatar" style="background-color: var(--primary-color); color: white;">
-                            <span class="material-symbols-outlined">person_check</span>
+                        <div class="reg-avatar" style="background-color: var(--primary-color); color: white; padding: 0; overflow: hidden;">
+                            ${avatarHtml}
                         </div>
                         <div class="reg-info">
                             <span class="reg-id" style="color: var(--primary-color);">${log.name}</span>

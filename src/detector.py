@@ -65,6 +65,12 @@ class FaceDetector:
                             matched_user = find_closest_user(embedding, threshold=0.40)
                             
                             if matched_user:
+                                # Encode cropped image to base64 to send to UI
+                                _, buffer = cv2.imencode('.jpg', cropped_img)
+                                import base64
+                                img_base64 = base64.b64encode(buffer).decode('utf-8')
+                                matched_user["image_base64"] = img_base64
+                                
                                 person_info = matched_user
                                 distance_val = round(matched_user["distance"], 2)
                                 angle = matched_user.get("matched_angle", "front")

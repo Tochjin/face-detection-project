@@ -55,7 +55,7 @@ def process_video_stream():
             continue
             
         if cap is None:
-            cap = cv2.VideoCapture(1)
+            cap = cv2.VideoCapture(0)
             
         if not cap.isOpened():
             time.sleep(0.5)
@@ -89,7 +89,8 @@ def process_video_stream():
                         latest_logs.insert(0, {
                             "id": user_id, 
                             "name": user_name, 
-                            "time": time.strftime("%H:%M:%S")
+                            "time": time.strftime("%H:%M:%S"),
+                            "image": person_info.get("image_base64")
                         })
                         if len(latest_logs) > 20:
                             latest_logs.pop()
