@@ -23,7 +23,11 @@ def main():
             print(f"Error: Model not found at {MODEL_PATH}")
             return
             
-        model = YOLO(str(MODEL_PATH)) 
+        import torch
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        print(f"YOLO is using device: {device}")
+        
+        model = YOLO(str(MODEL_PATH)).to(device) 
         detector = FaceDetector(model)
 
         # 2. Open the video stream

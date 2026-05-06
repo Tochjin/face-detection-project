@@ -1,7 +1,19 @@
 import cv2
+import tensorflow as tf
+
+gpus = tf.config.list_physical_devices('GPU')
+if gpus:
+    print(f"DeepFace (TensorFlow) found GPUs: {len(gpus)}. Enabling memory growth.")
+    for gpu in gpus:
+        try:
+            tf.config.experimental.set_memory_growth(gpu, True)
+        except RuntimeError as e:
+            print(f"TensorFlow memory growth error: {e}")
+else:
+    print("DeepFace (TensorFlow) is using CPU.")
+
 from deepface import DeepFace
 from pathlib import Path
-
 BASE_DIR = Path(__file__).parent.parent
 from src.database import find_closest_user
 

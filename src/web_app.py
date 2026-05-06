@@ -25,7 +25,11 @@ MODEL_PATH = BASE_DIR / 'models' / 'best.pt'
 if not MODEL_PATH.exists():
     print(f"Error: Model not found at {MODEL_PATH}")
 
-model = YOLO(str(MODEL_PATH))
+import torch
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+print(f"YOLO is using device: {device}")
+
+model = YOLO(str(MODEL_PATH)).to(device)
 detector = FaceDetector(model)
 
 # Video capture and processing globals
