@@ -42,6 +42,10 @@ class AccessLog(Base):
 
 def setup_database():
     """Create the tables in PostgreSQL"""
+    from sqlalchemy import text
+    with engine.connect() as conn:
+        conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
+        conn.commit()
     Base.metadata.create_all(bind=engine)
     print("Database tables created/verified successfully.")
 
