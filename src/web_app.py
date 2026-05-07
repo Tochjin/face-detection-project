@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, Form, File
 from fastapi.responses import StreamingResponse, JSONResponse
+from typing import Optional
 from fastapi.staticfiles import StaticFiles
 import cv2
 import threading
@@ -172,34 +173,58 @@ async def register_user(
     gender: str = Form(...),
     faculty: str = Form(...),
     department: str = Form(...),
-    image: UploadFile = File(...)
+    image: UploadFile = File(...),
+    image_left: Optional[UploadFile] = File(None),
+    image_right: Optional[UploadFile] = File(None)
 ):
     try:
-        # Read uploaded image
-        contents = await image.read()
-        nparr = np.frombuffer(contents, np.uint8)
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        embeddings_dict = {}
         
-        # Resize to prevent MTCNN memory issues
-        max_size = 1000
-        height, width = img.shape[:2]
-        if max(height, width) > max_size:
-            scale = max_size / max(height, width)
-            img = cv2.resize(img, (int(width * scale), int(height * scale)))
-
-        # Extract features using DeepFace (from detector.py logic)
-        results = DeepFace.represent(img, model_name="Facenet512", enforce_detection=False, detector_backend="mtcnn")
-        
-        if not results:
-            return JSONResponse(content={"detail": "No face found in image"}, status_code=400)
+        async def process_upload(file: UploadFile):
+            # Check if file has content
+            contents = await file.read()
+            if not contents:
+                return None
+            nparr = np.frombuffer(contents, np.uint8)
+            img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            if img is None:
+                return None
             
-        embedding = results[0]["embedding"]
-        embeddings_dict = {"front": embedding} # We just save front for now
+            # Resize to prevent MTCNN memory issues
+            max_size = 1000
+            height, width = img.shape[:2]
+            if max(height, width) > max_size:
+                scale = max_size / max(height, width)
+                img = cv2.resize(img, (int(width * scale), int(height * scale)))
+
+            # Extract features using DeepFace (from detector.py logic)
+            results = DeepFace.represent(img, model_name="Facenet512", enforce_detection=False, detector_backend="mtcnn")
+            if results:
+                return results[0]["embedding"]
+            return None
+
+        # Process front face
+        emb_front = await process_upload(image)
+        if emb_front is None:
+            return JSONResponse(content={"detail": "No face found in front image"}, status_code=400)
+        embeddings_dict["front"] = emb_front
+
+        # Process left face
+        if image_left is not None:
+            emb_left = await process_upload(image_left)
+            if emb_left:
+                embeddings_dict["left"] = emb_left
+
+        # Process right face
+        if image_right is not None:
+            emb_right = await process_upload(image_right)
+            if emb_right:
+                embeddings_dict["right"] = emb_right
 
         # Save to DB
         success = add_user(id, name, gender, faculty, department, embeddings_dict)
         if success:
-            return {"message": "Registration successful"}
+            return {"message": f"Registration successful (Faces saved: {', '.join(embeddings_dict.keys())})"}
         else:
             return JSONResponse(content={"detail": "Database error"}, status_code=500)
 

@@ -263,9 +263,20 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append("faculty", faculty);
             formData.append("department", dept);
 
-            // Append the image blob
-            const blob = dataURItoBlob(img1.src);
-            formData.append("image", blob, "capture.jpg");
+            // Append the front image blob
+            formData.append("image", dataURItoBlob(img1.src), "front.jpg");
+
+            // Append left image if available
+            const img2 = document.getElementById('img-2');
+            if (img2 && img2.style.display !== 'none' && img2.src) {
+                formData.append("image_left", dataURItoBlob(img2.src), "left.jpg");
+            }
+
+            // Append right image if available
+            const img3 = document.getElementById('img-3');
+            if (img3 && img3.style.display !== 'none' && img3.src) {
+                formData.append("image_right", dataURItoBlob(img3.src), "right.jpg");
+            }
 
             const response = await fetch('/api/register', {
                 method: 'POST',
